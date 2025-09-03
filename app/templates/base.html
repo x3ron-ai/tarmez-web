@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>{{ title if title else "Chat" }}</title>
+	<link rel="stylesheet" href="/static/styles/style.css">
+</head>
+<body>
+	<header>
+		<h1>{{ title if title else "Chat" }}</h1>
+		<nav>
+			<a href="/chats">Chats</a>
+		</nav>
+		<hr>
+	</header>
+
+	<main>
+		{% block content %}{% endblock %}
+	</main>
+</body>
+</html>-

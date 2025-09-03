@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Chats</h2>
+<input name="q" placeholder="Search users" autocomplete="off" id="user_search_input">
+<ul id="user_search_results" style="list-style:none; padding:0; margin:0;"></ul>
+<ul>
+	{% for chat in chats %}
+	<li><a href="/chat/{{ chat.id }}">{{ chat.username }}</a></li>
+	{% else %}
+	<li>Ha-ha no chats "/</li>
+	{% endfor %}
+</ul>
+
+<script src="/static/scripts/user_search.js"></script>
+{% endblock %}
