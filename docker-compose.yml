@@ -1,0 +1,38 @@
+services:
+    db:
+        image: postgres:16
+        container_name: tarmez_db
+        environment:
+            POSTGRES_USER: tarmez
+            POSTGRES_PASSWORD: tarmez
+            POSTGRES_DB: tarmez
+        ports:
+            - "5432:5432"
+        volumes:
+            - db_data:/var/lib/postgresql/data
+
+    server:
+        build: ../tarmez-server
+        container_name: tarmez_server
+        environment:
+            DATABASE_URL: postgresql+psycopg2://tarmez:tarmez@db:5432/tarmez
+            SECRET_KEY: change_me
+            ALGORITHM: HS256
+            ACCESS_TOKEN_EXPIRE_MINUTES: 1440
+        depends_on:
+            - db
+        ports:
+            - "8000:8000"
+
+    web:
+        build: .
+        container_name: tarmez_web
+        environment:
+            API_URL: http://server:8000
+        depends_on:
+            - server
+        ports:
+            - "8080:8080"
+
+volumes:
+    db_data:
