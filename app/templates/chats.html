@@ -7,8 +7,18 @@
 {% block content %}
 <div id="main">
 	<div class="user-list-block">
-		<div class="user-search-input-container">
-			<input name="q" placeholder="Search users" autocomplete="off" id="user_search_input">
+		<div class="user-controls">
+			<div class="user-menu-container">
+				<div class="user-menu-toggle">
+					<div class="menu-icon"></div>
+				</div>
+				<div class="user-dropdown">
+					<a href="/logout">Выйти</a>
+				</div>
+			</div>
+			<div class="user-search-input-container">
+				<input name="q" placeholder="Search users" autocomplete="off" id="user_search_input">
+			</div>
 		</div>
 		<div id="userSearchResults"></div>
 		<div class="chat-list">

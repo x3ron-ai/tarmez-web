@@ -10,6 +10,8 @@
     --primary-gradient: linear-gradient(135deg, var(--primary-gradient-color) 0%, var(--secondary-gradient-color) 100%);
     --error-bg: #ffe0e0;
     --error-color: #b00020;
+    --menu-element-color: rgb(223, 223, 223);
+	--dropdown-background-color: rgba(255,255,255,.4);
 }
 
 html, body {

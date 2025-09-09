@@ -29,3 +29,9 @@ def login_post(request: Request, username: str = Form(...), password: str = Form
 		response.set_cookie(key="access_token", value=token, httponly=True)
 		return response
 	return templates.TemplateResponse("login.html", {"request": request, "error": "Неверные данные"})
+
+@router.get("/logout")
+def logout_get(request: Request):
+	response = RedirectResponse("/login", status_code=303)
+	response.set_cookie(key="access_token", value="", httponly=True)
+	return response

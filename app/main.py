@@ -17,4 +17,4 @@ app.include_router(ws.router)
 
 @app.get("/")
 def index():
-	return RedirectResponse("/login")
+	return RedirectResponse("/chats")

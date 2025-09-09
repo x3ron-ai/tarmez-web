@@ -8,12 +8,12 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 @router.get("/chat/{user_id}")
-def get_chat(user_id: int, request: Request):
+def get_chat(user_id: int, request: Request, offset: int = 0, limit: int = 50):
 	token = request.cookies.get("access_token")
 	if not token:
 		raise HTTPException(status_code=401, detail="Unauthorized")
 
-	resp = get_chat_messages(token, user_id)
+	resp = get_chat_messages(token, user_id, offset=offset, limit=limit)
 
 	if resp.status_code != 200:
 		raise HTTPException(status_code=resp.status_code, detail="Error fetching messages")

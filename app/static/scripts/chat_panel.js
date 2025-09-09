@@ -8,9 +8,11 @@ const chatForm = document.getElementById("chat-form");
 const msgInput = document.getElementById("msg-input");
 const chatContainer = document.getElementById("chat-container");
 
+let currentOffset = 0;
+const limit = 50;
 
-function appendMessage(msg, incoming) {
-	// console.log(msg.id, msg.sender.id, msg.receiver.id);
+function createMessageBlock(msg, incoming) {
+
 	const wrapper = document.createElement("div");
 	wrapper.className = incoming ? "message incoming" : "message own";
 
@@ -25,26 +27,60 @@ function appendMessage(msg, incoming) {
 	text.appendChild(time);
 	wrapper.appendChild(text);
 
-	chatBox.appendChild(wrapper);
+	return wrapper;
+}
+
+function appendMessage(msg, incoming) {
+	const mes_block = createMessageBlock(msg, incoming)
+	chatBox.appendChild(mes_block);
 	chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function prependMessage(msg, incoming) {
+	const mes_block = createMessageBlock(msg, incoming)
+	chatBox.prepend(mes_block);
+}
+
+async function loadMessages(userId, offset = 0, append = false) {
+	const res = await fetch(`/chat/${userId}?offset=${offset}&limit=${limit}`);
+	if (!res.ok) return;
+
+	const object = await res.json();
+	const messages = object.messages;
+
+	const oldScrollHeight = chatBox.scrollHeight;
+
+	messages.forEach(msg => {
+		if (append) {
+			prependMessage(msg, msg.sender.id == currentUserId);
+		} else {
+			appendMessage(msg, msg.sender.id == currentUserId);
+		}
+		lastMessageId = Math.max(lastMessageId, msg.id);
+	});
+
+	if (append) {
+		chatBox.scrollTop = chatBox.scrollHeight - oldScrollHeight;
+	}
 }
 
 async function openChat(userId, username = "*NO_NAME_") {
 	currentUserId = userId;
+	currentOffset = 0;
 	chatContainer.style = "";
 	if (chatUsername) chatUsername.textContent = username;
 
-	const res = await fetch(`/chat/${currentUserId}`);
-	if (res.ok) {
-		const object = await res.json();
-		const messages = object.messages;
-		chatBox.innerHTML = "";
-		messages.forEach(msg => {
-			appendMessage(msg, msg.sender.id == currentUserId);
-			lastMessageId = Math.max(lastMessageId, msg.id);
-		});
-	}
+	chatBox.innerHTML = "";
+	await loadMessages(currentUserId, currentOffset, false);
+	chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+chatBox.addEventListener("scroll", async () => {
+	if (chatBox.scrollTop === 0 && currentUserId) {
+		currentOffset += limit;
+		await loadMessages(currentUserId, currentOffset, true);
+	}
+});
 
 async function updateChatList() {
 	const res = await fetch(`/chats/list`);
@@ -149,6 +185,22 @@ chatForm.addEventListener("submit", async e => {
 
 	if (response.ok) {
 		msgInput.value = "";
+	}
+});
+
+const userMenuToggle = document.querySelector('.user-menu-toggle');
+const userMenuContainer = document.querySelector('.user-menu-container');
+
+userMenuToggle.addEventListener('click', (e) => {
+	e.stopPropagation();
+	userMenuToggle.classList.toggle('active');
+	userMenuContainer.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+	if (!userMenuContainer.contains(e.target)) {
+		userMenuToggle.classList.remove('active');
+		userMenuContainer.classList.remove('show');
 	}
 });
 
