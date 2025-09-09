@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
+
 from app.service.client import get_chats
 
 templates = Jinja2Templates(directory="app/templates")
@@ -17,8 +19,11 @@ def chat_list(request: Request):
 	return chats_list
 
 @router.get("/chats")
-def chats(request: Request):
+async def chats(request: Request, csrf_protect: CsrfProtect = Depends()):
 	token = request.cookies.get("access_token")
 	if not token:
 		return RedirectResponse("/login")
-	return templates.TemplateResponse("chats.html", {"request": request})
+	csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+	response = templates.TemplateResponse("chats.html", {"request": request, "csrf_token": csrf_token})
+	csrf_protect.set_csrf_cookie(signed_token, response)
+	return response

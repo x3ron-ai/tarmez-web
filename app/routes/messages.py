@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Request, Form, HTTPException, Depends
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
+
 from app.service.client import get_chat_messages, send_message, get_updates
-from fastapi.responses import JSONResponse
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
@@ -22,11 +23,12 @@ def get_chat(user_id: int, request: Request, offset: int = 0, limit: int = 50):
 	return {"user_id": user_id, "messages": messages}
 
 @router.post("/chat/{user_id}/send")
-def send_msg(request: Request, user_id: int, content: str = Form(...)):
+async def send_msg(request: Request, user_id: int, content: str = Form(...), csrf_token: CsrfProtect = Depends()):
 	token = request.cookies.get("access_token")
 	if not token:
 		return RedirectResponse("/login")
-	send_message(token, receiver_id=user_id, content=content)
+	await csrf_token.validate_csrf(request)
+	send_message(token, user_id, content)
 	return RedirectResponse(f"/chat/{user_id}", status_code=303)
 
 @router.get("/updates")

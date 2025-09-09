@@ -177,9 +177,14 @@ chatForm.addEventListener("submit", async e => {
 	const content = msgInput.value.trim();
 	if (!content || !currentUserId) return;
 
+	const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
 	const response = await fetch(`/chat/${currentUserId}/send`, {
 		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"X-CSRF-Token": csrfToken
+		 },
 		body: new URLSearchParams({ content })
 	});
 
