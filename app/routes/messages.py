@@ -1,21 +1,25 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from app.api.client import get_chat_messages, send_message, get_updates
+from app.service.client import get_chat_messages, send_message, get_updates
 from fastapi.responses import JSONResponse
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 @router.get("/chat/{user_id}")
-def chat(request: Request, user_id: int):
+def get_chat(user_id: int, request: Request):
 	token = request.cookies.get("access_token")
 	if not token:
-		return RedirectResponse("/login")
+		raise HTTPException(status_code=401, detail="Unauthorized")
+
 	resp = get_chat_messages(token, user_id)
-	print(resp.json())
-	messages = resp.json() if resp.status_code == 200 else []
-	return templates.TemplateResponse("chat.html", {"request": request, "messages": messages, "user_id": user_id})
+
+	if resp.status_code != 200:
+		raise HTTPException(status_code=resp.status_code, detail="Error fetching messages")
+
+	messages = resp.json()
+	return {"user_id": user_id, "messages": messages}
 
 @router.post("/chat/{user_id}/send")
 def send_msg(request: Request, user_id: int, content: str = Form(...)):

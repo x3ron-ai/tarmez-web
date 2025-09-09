@@ -1,15 +1,52 @@
 {% extends "base.html" %}
+
+{% block style_links %}
+<link rel="stylesheet" href="/static/styles/chats.css">
+{% endblock %}
+
 {% block content %}
-<h2>Chats</h2>
-<input name="q" placeholder="Search users" autocomplete="off" id="user_search_input">
-<ul id="user_search_results" style="list-style:none; padding:0; margin:0;"></ul>
-<ul>
-	{% for chat in chats %}
-	<li><a href="/chat/{{ chat.id }}">{{ chat.username }}</a></li>
-	{% else %}
-	<li>Ha-ha no chats "/</li>
-	{% endfor %}
-</ul>
+<div id="main">
+	<div class="user-list-block">
+		<div class="user-search-input-container">
+			<input name="q" placeholder="Search users" autocomplete="off" id="user_search_input">
+		</div>
+		<div id="userSearchResults"></div>
+		<div class="chat-list">
+			{% for chat in chats %}
+			<div class="user-list-element" data-user-id="{{ chat.id }}">
+				<div class="info">
+					<div class="title">
+						<h3 class="fullName">{{ chat.username }}</h3>
+					</div>
+					<div class="subtitle">
+						<p class="last-message">
+							{{ chat.last_message or "No messages yet" }}
+						</p>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div id="chat-container" style="display: none">
+		<div class="chat-info">
+			<div id="chat-name-container">
+				<h3 id="active-chat-name">Chat-Name</h3>
+			</div>
+		</div>
+
+		<div id="chat-box" class="scroll-bar">
+			
+		</div>
+
+		<form id="chat-form">
+			<input type="text" id="msg-input" name="content" placeholder="Введите сообщение" required>
+			<button type="submit">Send</button>
+		</form>
+	</div>
+</div>
 
 <script src="/static/scripts/user_search.js"></script>
+<script src="/static/scripts/chat_panel.js"></script>
 {% endblock %}

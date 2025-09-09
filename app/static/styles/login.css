@@ -1,0 +1,112 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    background: #fff;
+    padding: 50px 40px;
+    border-radius: 16px;
+    box-shadow: var(--container-box-shadow);
+    width: 400px;
+    text-align: center;
+}
+
+.login-title {
+    margin-bottom: 35px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+}
+
+.error-message {
+    background: var(--error-bg);
+    color: var(--error-color);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.login-form .form-group {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 14px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    background: transparent;
+    outline: none;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.login-form label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 16px;
+    pointer-events: none;
+    transition: all 0.3s;
+    background: #fff;
+    padding: 0 4px;
+    z-index: 1;
+}
+
+.login-form input::placeholder {
+    color: transparent;
+}
+
+.login-form input:focus + label,
+.login-form input:not(:placeholder-shown) + label {
+    top: -10px;
+    left: 10px;
+    font-size: 12px;
+    background: #fff;
+    padding: 0 4px;
+    color: var(--primary-color);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.signup-text {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+}
+
+.signup-text a {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.signup-text a:hover {
+    text-decoration: underline;
+}

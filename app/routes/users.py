@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from app.api.client import search_users
+from app.service.client import search_users
 
 router = APIRouter()
 

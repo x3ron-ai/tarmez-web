@@ -50,3 +50,7 @@ async def get_updates(token: str, last_message_id: int = 0, timeout: int = 30):
 	async with httpx.AsyncClient(timeout=timeout+5) as client:
 		response = await client.get(url, headers=headers, params=params)
 		return response
+
+def get_websocket_url(token: str):
+	url = f"{settings.api_url}/api/ws/messages?token={token}"
+	return url

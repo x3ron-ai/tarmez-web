@@ -1,4 +1,5 @@
-const user_search_results = document.getElementById("user_search_results");
+const userSearchResults = document.getElementById("userSearchResults");
+const chatListObject = document.querySelector(".chat-list");
 let debounceTimer = null;
 
 async function search_users(username) {
@@ -16,25 +17,46 @@ document.getElementById("user_search_input").addEventListener("input", function(
 
 	debounceTimer = setTimeout(async () => {
 		if (!current_input.trim()) {
-			user_search_results.innerHTML = "";
+			userSearchResults.innerHTML = "";
+			chatListObject.style.display = "flex";
 			return;
 		}
 
 		const users = await search_users(current_input);
-		user_search_results.innerHTML = "";
+		userSearchResults.innerHTML = "";
+		chatListObject.style.display = "none";
 
 		users.forEach(user => {
-            const li = document.createElement("li");
-            li.style.listStyle = "none";
-            
-            const a = document.createElement("a");
-            a.textContent = user.username;
-            a.href = `/chat/${user.id}`;
-            a.style.textDecoration = "none";
-            a.style.color = "inherit";
-            
-            li.appendChild(a);
-            user_search_results.appendChild(li);
-        });
+			const userDiv = document.createElement("div");
+			userDiv.className = "user-list-element";
+			userDiv.setAttribute("data-user-id", user.id);
+
+			const infoDiv = document.createElement("div");
+			infoDiv.className = "info";
+
+			const titleDiv = document.createElement("div");
+			titleDiv.className = "title";
+			const h3 = document.createElement("h3");
+			h3.className = "fullName";
+			h3.textContent = user.username;
+			titleDiv.appendChild(h3);
+
+			const subtitleDiv = document.createElement("div");
+			subtitleDiv.className = "subtitle";
+			const p = document.createElement("p");
+			p.className = "last-message";
+			p.textContent = "";
+			subtitleDiv.appendChild(p);
+
+			infoDiv.appendChild(titleDiv);
+			infoDiv.appendChild(subtitleDiv);
+			userDiv.appendChild(infoDiv);
+
+			userDiv.addEventListener("click", () => {
+				openChat(user.id, "TEST")
+			});
+
+			userSearchResults.appendChild(userDiv);
+		});
 	}, 300);
 });

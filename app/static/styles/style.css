@@ -1,0 +1,19 @@
+:root {
+    --background-color: linear-gradient(135deg, rgb(6, 14, 70) 0%, rgb(4, 39, 134) 100%);
+    --chat-accent-color: #f5f5f5;
+    --chat-elemement-background-color: #f5f5f5;
+    --scrollbar-color: rgba(90, 90, 90, 0.3) rgba(0, 0, 0, 0);
+    --border-color: rgb(223, 223, 223);
+    --container-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    --primary-gradient-color: #6a11cb;
+    --secondary-gradient-color: rgba(14, 25, 111, 1);
+    --primary-gradient: linear-gradient(135deg, var(--primary-gradient-color) 0%, var(--secondary-gradient-color) 100%);
+    --error-bg: #ffe0e0;
+    --error-color: #b00020;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}

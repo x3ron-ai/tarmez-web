@@ -1,0 +1,231 @@
+let lastMessageId = 0;
+let currentUserId = null;
+let chatList = [];
+
+const chatBox = document.getElementById("chat-box");
+const chatUsername = document.getElementById("active-chat-name");
+const chatForm = document.getElementById("chat-form");
+const msgInput = document.getElementById("msg-input");
+const chatContainer = document.getElementById("chat-container");
+
+
+function appendMessage(msg, incoming) {
+	// console.log(msg.id, msg.sender.id, msg.receiver.id);
+	const wrapper = document.createElement("div");
+	wrapper.className = incoming ? "message incoming" : "message own";
+
+	const text = document.createElement("div");
+	text.className = "text-content";
+	text.innerHTML = msg.content;
+
+	const time = document.createElement("span");
+	time.className = "message-time";
+	time.textContent = new Date(msg.created_at).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+
+	text.appendChild(time);
+	wrapper.appendChild(text);
+
+	chatBox.appendChild(wrapper);
+	chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function openChat(userId, username = "*NO_NAME_") {
+	currentUserId = userId;
+	chatContainer.style = "";
+	if (chatUsername) chatUsername.textContent = username;
+
+	const res = await fetch(`/chat/${currentUserId}`);
+	if (res.ok) {
+		const object = await res.json();
+		const messages = object.messages;
+		chatBox.innerHTML = "";
+		messages.forEach(msg => {
+			appendMessage(msg, msg.sender.id == currentUserId);
+			lastMessageId = Math.max(lastMessageId, msg.id);
+		});
+	}
+}
+
+async function updateChatList() {
+	const res = await fetch(`/chats/list`);
+
+	if (res.ok) {
+		const object = await res.json();
+		chatList = object.sort(
+			(a, b) =>
+				new Date(b.last_message.created_at) - new Date(a.last_message.created_at)
+		);
+		lastMessageId = chatList[0].last_message.id;
+	}
+}
+
+
+function showChatList() {
+	chatListObject.innerHTML = "";
+	chatList.forEach(user => {
+		const userDiv = document.createElement("div");
+		userDiv.className = "user-list-element";
+		userDiv.setAttribute("data-user-id", user.id);
+
+		const infoDiv = document.createElement("div");
+		infoDiv.className = "info";
+
+		const titleDiv = document.createElement("div");
+		titleDiv.className = "title";
+		const h3 = document.createElement("h3");
+		h3.className = "fullName";
+		h3.textContent = user.username;
+		titleDiv.appendChild(h3);
+
+		const subtitleDiv = document.createElement("div");
+		subtitleDiv.className = "subtitle";
+		const subtitleP = document.createElement("p");
+		subtitleP.className = "last-message";
+		subtitleP.textContent = `${user.username}: ${user.last_message.content}`;
+		subtitleDiv.appendChild(subtitleP);
+
+		infoDiv.appendChild(titleDiv);
+		infoDiv.appendChild(subtitleDiv);
+
+		const infoTimeDiv = document.createElement("div");
+		infoTimeDiv.className = "info-time";
+		const messageTimeDiv = document.createElement("div");
+		const messageTimeP = document.createElement("p")
+		const createdAt = new Date(user.last_message.created_at);
+		const now = new Date();
+
+		const diffMs = now - createdAt;
+		const diffHours = diffMs / (1000 * 60 * 60);
+
+		let formattedTime;
+		if (diffHours < 24) {
+			formattedTime = createdAt.toLocaleTimeString("ru-RU", {
+				hour: "2-digit",
+				minute: "2-digit"
+			});
+		} else {
+			formattedTime = createdAt.toLocaleDateString("ru-RU", {
+				day: "2-digit",
+				month: "2-digit",
+				year: "2-digit"
+			});
+		}
+
+		messageTimeP.textContent = formattedTime;
+
+		messageTimeDiv.appendChild(messageTimeP);
+		infoTimeDiv.appendChild(messageTimeDiv);
+
+		userDiv.appendChild(infoDiv);
+		userDiv.appendChild(infoTimeDiv);
+
+		userDiv.addEventListener("click", () => {
+			openChat(user.id, user.username)
+		});
+		chatListObject.appendChild(userDiv);
+	});
+}
+
+
+
+document.querySelectorAll(".user-list-element").forEach(el => {
+	el.addEventListener("click", () => {
+		const userId = el.dataset.userId;
+		const username = el.querySelector(".fullName").textContent;
+		openChat(userId, username);
+	});
+});
+
+chatForm.addEventListener("submit", async e => {
+	e.preventDefault();
+	const content = msgInput.value.trim();
+	if (!content || !currentUserId) return;
+
+	const response = await fetch(`/chat/${currentUserId}/send`, {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams({ content })
+	});
+
+	if (response.ok) {
+		msgInput.value = "";
+	}
+});
+
+// WEBSOCKET
+
+async function wsListen() {
+	const res = await fetch("/ws_url");
+	if (!res.ok) return;
+	const { ws_url } = await res.json();
+
+	const ws = new WebSocket(ws_url);
+
+	ws.onopen = () => {
+		console.log("Connected to WebSocket");
+	};
+
+	ws.onmessage = (event) => {
+		try {
+			const msg = JSON.parse(event.data);
+
+			updateChatList();
+			showChatList();
+
+			if (msg.receiver.id != currentUserId && msg.sender.id != currentUserId) {
+				return;
+			}
+
+			console.log("WS:", msg);
+			appendMessage(msg, msg.sender.id === currentUserId);
+
+			lastMessageId = Math.max(lastMessageId, msg.id);
+
+		} catch (err) {
+			console.error("Error parsing WS message:", err);
+		}
+	};
+
+	ws.onerror = (err) => {
+		console.error("WebSocket error:", err);
+	};
+
+	ws.onclose = (event) => {
+		console.log(`WebSocket closed: code=${event.code}, reason=${event.reason}`);
+		setTimeout(wsListen, 1000);
+	};
+}
+
+
+async function pollUpdates() {
+	try {
+
+		const res = await fetch(`/updates?last_message_id=${lastMessageId}`, {
+			headers: { Accept: "application/json" }
+		});
+		if (res.ok) {
+			const newMessages = await res.json();
+			for (const msg of newMessages) {
+				await updateChatList();
+				showChatList();
+			
+				if (msg.receiver.id != currentUserId && msg.sender.id != currentUserId) {
+					continue;
+				}
+				
+				appendMessage(msg, msg.sender.id == currentUserId);
+				lastMessageId = Math.max(lastMessageId, msg.id);
+			}
+		}
+	} catch (err) {
+		console.error("Error fetching updates:", err);
+	}
+	setTimeout(pollUpdates, 1000);
+}
+
+window.onload = async () => {
+	//pollUpdates();
+	wsListen();
+	await updateChatList();
+	showChatList();
+}
