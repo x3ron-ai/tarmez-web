@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from app.service.client import register_user, login_user
 
 templates = Jinja2Templates(directory="app/templates")
-router = APIRouter()
+router = APIRouter(tags=["auth"])
 
 @router.get("/register")
 def register_get(request: Request):

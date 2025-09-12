@@ -27,6 +27,10 @@ class CsrfSettings(BaseModel):
 def get_csrf_config():
 	return CsrfSettings()
 
+@app.get("/ping")
+def index():
+	return {"response":"pong"}
+
 @app.get("/")
 def index():
 	return RedirectResponse("/chats")

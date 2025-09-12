@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from app.service.client import get_websocket_url
 
-router = APIRouter()
+router = APIRouter(tags=["ws"])
 
 @router.get("/ws_url")
 def get_ws_url(request: Request):

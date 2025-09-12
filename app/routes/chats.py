@@ -6,7 +6,7 @@ from fastapi_csrf_protect import CsrfProtect
 from app.service.client import get_chats
 
 templates = Jinja2Templates(directory="app/templates")
-router = APIRouter()
+router = APIRouter(tags=["chats"])
 
 @router.get("/chats/list")
 def chat_list(request: Request):
