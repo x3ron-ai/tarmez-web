@@ -46,11 +46,12 @@ async function loadMessages(userId, offset = 0, append = false) {
 	if (!res.ok) return;
 
 	const object = await res.json();
-	const messages = object.messages;
+
+	await console.log(object);
 
 	const oldScrollHeight = chatBox.scrollHeight;
 
-	messages.forEach(msg => {
+	object.forEach(msg => {
 		if (append) {
 			prependMessage(msg, msg.sender.id == currentUserId);
 		} else {
