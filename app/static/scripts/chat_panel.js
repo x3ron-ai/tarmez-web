@@ -175,7 +175,7 @@ document.querySelectorAll(".user-list-element").forEach(el => {
 
 chatForm.addEventListener("submit", async e => {
 	e.preventDefault();
-	const content = msgInput.value.trim();
+	const content = msgInput.innerText.trim();
 	if (!content || !currentUserId) return;
 
 	const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
@@ -185,14 +185,28 @@ chatForm.addEventListener("submit", async e => {
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 			"X-CSRF-Token": csrfToken
-		 },
+		},
 		body: new URLSearchParams({ content })
 	});
 
 	if (response.ok) {
-		msgInput.value = "";
+		msgInput.innerText = "";
+		msgInput.style.height = "40px";
 	}
 });
+
+msgInput.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" && !e.shiftKey) {
+		e.preventDefault();
+		chatForm.requestSubmit();
+	}
+});
+
+function autoResize() {
+	msgInput.style.height = "auto";
+	msgInput.style.height = msgInput.scrollHeight + "px";
+}
+msgInput.addEventListener("input", autoResize);
 
 const userMenuToggle = document.querySelector('.user-menu-toggle');
 const userMenuContainer = document.querySelector('.user-menu-container');
@@ -221,24 +235,24 @@ async function wsListen() {
 
 	ws.onopen = () => {
 		console.log("Connected to WebSocket");
+		ws.send(JSON.stringify({type: "ping"}));
 	};
 
-	ws.onmessage = (event) => {
+	ws.onmessage = async (event) => {
 		try {
 			const msg = JSON.parse(event.data);
-
-			updateChatList();
+	
+			await updateChatList();  // <- надо await, иначе showChatList может сработать до fetch
 			showChatList();
-
+	
 			if (msg.receiver.id != currentUserId && msg.sender.id != currentUserId) {
 				return;
 			}
-
-			console.log("WS:", msg);
+	
 			appendMessage(msg, msg.sender.id === currentUserId);
-
+	
 			lastMessageId = Math.max(lastMessageId, msg.id);
-
+	
 		} catch (err) {
 			console.error("Error parsing WS message:", err);
 		}

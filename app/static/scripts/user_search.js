@@ -53,7 +53,7 @@ document.getElementById("user_search_input").addEventListener("input", function(
 			userDiv.appendChild(infoDiv);
 
 			userDiv.addEventListener("click", () => {
-				openChat(user.id, "TEST")
+				openChat(user.id, user.username)
 			});
 
 			userSearchResults.appendChild(userDiv);
